@@ -1,0 +1,12 @@
+BANCO MAINFRAME S.A-     REPORTE AUDI BATCH
+================================================
+SUC: 0001 | 000100 | DEPOSITO   | $       500.00
+SUC: 0001 | 000200 | EXTRACCION | $       300.00
+TOTAL SUCURSAL 0001: DEP=$       500.00 | EXT=$       300.00
+----------------------------------
+SUC: 0002 | 000200 | DEPOSITO   | $       100.00
+TOTAL SUCURSAL 0002: DEP=$       100.00 | EXT=$         0.00
+----------------------------------
+==================================
+RESUMEN GLOBAL DE AUDITORIA:
+PROCESADOS EXITOSOS:     3 | RECHAZADOS:      0
