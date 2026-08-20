@@ -12,6 +12,25 @@ Sistema de actualización de maestro de cuentas bancarias y generación de repor
 
 **BANK002** es un módulo transaccional batch diseñado para procesar lotes masivos de movimientos financieros (depósitos y extracciones) sobre un maestro de cuentas. El sistema aplica validaciones de negocio rigurosas, actualiza los saldos en un archivo maestro consolidado, registra transacciones rechazadas con motivo explícito y genera un informe de auditoría por cortes de control (sucursales).
 
+
+## ⚙️ Orquestación Mainframe (z/OS JCL)
+
+El proyecto incluye el trabajo por lotes **`JOBBANK02.jcl`** listo para ser enviado al JES2/JES3 en entornos IBM z/OS.
+
+### Mapeo de Sentencias DD (Data Definition)
+
+| DD Name | Flujo | Data Set Físico (z/OS) | Formato (DCB) |
+| :--- | :--- | :--- | :--- |
+| `MAEENT` | Entrada | `PRD.BANK.MAESTRO.ENTRADA` | `RECFM=FB, LRECL=40` |
+| `NOVENT` | Entrada | `PRD.BANK.NOVEDADES.ENTRADA` | `RECFM=FB, LRECL=21` |
+| `MAESAL` | Salida | `PRD.BANK.MAESTRO.SALIDA` | `RECFM=FB, LRECL=40` |
+| `RECSAL` | Salida | `PRD.BANK.RECHAZOS.SALIDA` | `RECFM=FB, LRECL=41` |
+| `REPSAL` | Salida | `PRD.BANK.REPORTE.AUDITORIA` | `RECFM=FB, LRECL=80` |
+
+### Pasos de Ejecución del Job
+1. **`CLEANUP` (`IDCAMS`):** Purga preventiva de Data Sets de salida generados en ejecuciones anteriores para evitar duplicaciones.
+2. **`STEP010` (`PGM=BANK002`):** Asignación dinámica de recursos de disco (`SPACE=(TRK,...)`), ejecución del binario alojado en la `STEPLIB` y retorno de código de condición (`MAXCC / RETURN-CODE`).
+
 ---
 
 ## 🛠️ Arquitectura y Patrones de Diseño
@@ -34,10 +53,12 @@ El desarrollo sigue los estándares y patrones tradicionales de sistemas *mainfr
 ## 🔄 Diagrama del Flujo de Procesamiento
 
 ```text
-[ Maestro Entrada ] ───┐
-                       ├───> [ BANK002.exe ] ───┬───> [ Maestro Actualizado ]
-[ Novedades Raw   ] ───┘     (Balance Line)     ├───> [ Log de Rechazados   ]
-                                                └───> [ Reporte Auditoría   ]
+[ BANK002J.jcl ] (Job Control)
+                                |
+[ Maestro Entrada ] ───┐        v
+                       ├───> [ BANK002 ] ───┬───> [ Maestro Actualizado ]
+[ Novedades Raw   ] ───┘   (Balance Line)   ├───> [ Log de Rechazados   ]
+                                            └───> [ Reporte Auditoría   ]
 
 ```
 
@@ -53,8 +74,8 @@ bin/
 |    ├── maestro_actualizado.dat  # Maestro procesado con saldos finales
 |    ├── rechazados.dat           # Log de novedades invalidadas con causa
 |    └── reporte_control.txt      # Reporte impreso de auditoría y cortes
-|__ jol/
-     ├── 
+|__ jcl/
+     ├── JOBBANK02.jcl
 ```
 
 
