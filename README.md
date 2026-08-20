@@ -118,3 +118,40 @@ Encadenamiento y Sincronización de Banderas: Se eliminaron evaluaciones boolean
 
 Desarrollado como módulo core de procesamiento batch financiero.
 
+
+## Adaptación en COBOL para Entornos Mainframe
+Para que este JCL conecte de forma transparente con tu programa COBOL en un mainframe real, la cláusula ASSIGN en la FILE-CONTROL debe apuntar directamente a los DD Names del JCL (sin comillas ni rutas de carpetas de Windows/Linux):
+
+```COBOL
+ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT MAESTRO-ENTRADA  ASSIGN TO MAEENT
+                  ORGANIZATION IS LINE SEQUENTIAL.
+           SELECT NOVEDADES-ENTRADA ASSIGN TO NOVENT
+                  ORGANIZATION IS LINE SEQUENTIAL.
+           SELECT MAESTRO-SALIDA   ASSIGN TO MAESAL
+                  ORGANIZATION IS LINE SEQUENTIAL.
+           SELECT RECHAZOS-SALIDA  ASSIGN TO RECSAL
+                  ORGANIZATION IS LINE SEQUENTIAL.
+           SELECT REPORTE-SALIDA   ASSIGN TO REPSAL
+                  ORGANIZATION IS LINE SEQUENTIAL.
+```
+
+
+##  Explicación de Parámetros del JCL
+
+JOB: Define la tarjeta del trabajo (Nombre del Job BANK002J, clase de ejecución CLASS=A y destino de mensajes MSGCLASS=X).
+
+IDCAMS (Paso 1): Utility de IBM que elimina los Data Sets de salida generados en ejecuciones anteriores para evitar errores de duplicación (DUPLICATE DATASET).
+
+STEPLIB: Indica la librería de carga (Load Library) donde se encuentra alojado el ejecutable compilado BANK002.
+
+DISP=(NEW,CATLG,DELETE): Insttruye al sistema operativo a crear un archivo nuevo, catalogarlo si el programa finaliza exitosamente o borrarlo si ocurre un error (Abend).
+
+DCB (Data Control Block):
+
+RECFM=FB: Formato de registro fijo bloqueado (Fixed Blocked).
+
+LRECL: Longitud exacta de línea que definiste en la FD del COBOL (40 bytes para el maestro, 80 bytes para el reporte).
+
