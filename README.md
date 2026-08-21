@@ -1,12 +1,46 @@
-# Core Banking Batch & Audit System (COBOL)
+# 🏦 Core Banking Modernization: Batch Processing & API Integration
 
-Sistema de actualización de maestro de cuentas bancarias y generación de reportes de auditoría en tiempo de ejecución *Batch*, implementado en **COBOL ANSI85** bajo arquitectura **Balance Line**.
+![Architecture](https://img.shields.io/badge/Architecture-Hexagonal%20%2F%20Clean-blue)
+![Java](https://img.shields.io/badge/Java-21-orange)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen)
+![Angular](https://img.shields.io/badge/Angular-Signals%20%2F%20Standalone-red)
+![IBM Mainframe](https://img.shields.io/badge/Mainframe-COBOL%20%2F%20JCL-darkblue)
 
-![COBOL](https://img.shields.io/badge/Language-COBOL_ANSI85-blue?style=for-the-badge&logo=gnu)
-![Build](https://img.shields.io/badge/Compiler-GnuCOBOL_v3.1+-green?style=for-the-badge)
-![Status](https://img.shields.io/badge/Core_Banking-Batch_Processing-orange?style=for-the-badge)
+## 📌 Visión General
+Este proyecto demuestra un flujo **End-to-End de Modernización de Core Banking**, integrando sistemas batch legados de procesamiento transaccional en **COBOL/JCL** con microservicios en **Java 21 / Spring Boot** bajo **Arquitectura Hexagonal**, expuestos hacia un dashboard de auditoría y monitoreo reactivo en **Angular con Signals**.
+
+El caso de estudio implementa la ingesta de transacciones masivas de cuentas bancarias, cálculo de saldos con reglas de negocio bancarias (procesamiento Balance Line) y la exposición en tiempo real del estado de saldos y trazabilidad de auditoría.
 
 ---
+
+## 🏗️ Arquitectura de 3 Capas ("El Tridente")
+
+```text
+┌─────────────────────────┐      ┌─────────────────────────┐      ┌─────────────────────────┐
+│     CAPA 1: BATCH       │      │     CAPA 2: BACKEND     │      │    CAPA 3: FRONTEND     │
+│       (Legacy)          │ ───► │      (Modernization)    │ ───► │      (Monitoring)       │
+│  COBOL + JCL Engine     │      │ Spring Boot + Java 21   │      │    Angular + Signals    │
+│  Genera: .DAT (LRECL40) │      │  Hexagonal Architecture │      │   Audit Dashboard UI    │
+└─────────────────────────┘      └─────────────────────────┘      └─────────────────────────┘
+```
+
+ ### 1. Engine Batch (COBOL / JCL)
+Motor Transaccional (BANK002.cbl): Procesa el archivo de novedades sobre el maestro de cuentas usando el algoritmo Balance Line. Aplica validaciones estrictas de saldos, cortes de control por sucursal y detección de rechazos.
+
+Orquestación z/OS (BANK002J.jcl): Definición de Data Sets (DD), gestión de DISP=(OLD,KEEP,NEW), ejecución de pasos en IBM Mainframe y manejo de códigos de retorno (RC 00/04/08) para auditoría.
+
+### 2. API REST & Integration Layer (Java 21 / Spring Boot)
+Arquitectura Hexagonal: Separación de capas en Domain, Application e Infrastructure para garantizar un diseño desacoplado e inmutable.
+
+CobolMasterAdapter: Adaptador de infraestructura que lee e interpreta por posiciones fijas (Copybook Layout) el archivo plano físico .dat derivado del lote COBOL.
+
+DTOs & Java Records: Uso de CuentaResponseDto con Records de Java 21 para inmutabilidad y transferencia eficiente hacia el cliente.
+
+### 3. Frontend Audit Dashboard (Angular)
+Reactividad con Signals: Manejo de estado reactivo asincrónico para la carga y monitoreo de saldos en tiempo real.
+
+Standalone Architecture: Componentes desacoplados sin necesidad de NgModules complejos, garantizando modularidad y tiempos de carga reducidos.
+
 
 ## 📌 Descripción del Proyecto
 
@@ -66,17 +100,34 @@ El desarrollo sigue los estándares y patrones tradicionales de sistemas *mainfr
 
 ```
 bin/
-│  └── BANK002.exe          # Binario compilado
-├── data/
-│   ├── maestro_cuentas.dat      # Archivo Maestro de Cuentas (Entrada)
-│   └── novedades_raw.dat        # Archivo de Transacciones/Novedades (Entrada)
-└── output/
-|    ├── maestro_actualizado.dat  # Maestro procesado con saldos finales
-|    ├── rechazados.dat           # Log de novedades invalidadas con causa
-|    └── reporte_control.txt      # Reporte impreso de auditoría y cortes
-|__ jcl/
-     ├── JOBBANK02.jcl
+├── cobol/
+│   ├── BANK002.cbl             # Motor Batch COBOL de actualización de saldos
+│   └── bin/
+│       └── output/             # Archivos físicamente generados por el lote (.dat)
+├── jcl/
+│   └── JOBBANK02.jcl            # Job Control Language para ejecución en z/OS
+├── CoreBankingBatch/           # Backend Spring Boot (Java 21)
+│   ├── src/main/java/com/ApiIntegration/CoreBankingBatch/
+│   │   ├── application/        # Servicios de aplicación (CuentaService)
+│   │   ├── domain/             # Modelo de Dominio puro (CuentaBancaria)
+│   │   └── infrastructure/     # Adaptadores de lectura (CobolMasterAdapter) y REST API
+│   └── pom.xml
+├── frontend-dashboard/         # Frontend Angular Audit UI
+│   └── src/app/
+│       ├── services/           # Service HTTP con Signals (CoreBankingService)
+│       └── app.component.ts    # Dashboard UI de auditoría
+└── README.md
 ```
+
+## 🛠️ Tecnologías Utilizadas
+Backend & Integración: Java 21, Spring Boot 3, Spring Web, Lombok, Maven.
+
+Frontend: Angular 17+, TypeScript, RxJS, Signals, CSS Custom Properties.
+
+Legacy Core: COBOL ANSI/IBM, JCL (Job Control Language), Fixed-Width Data Parsing.
+
+Herramientas & Asistencia AI: Cursor, GitHub Copilot, Git, VS Code, IntelliJ IDEA.
+
 
 
 ## Especificación de Registros (Layouts)
@@ -159,6 +210,33 @@ ENVIRONMENT DIVISION.
                   ORGANIZATION IS LINE SEQUENTIAL.
 ```
 
+## 🚀 Guía de Ejecución Local
+Prerrequisitos
+Java 21 JDK instalado.
+
+Node.js (v18+) y Angular CLI (npm install -g @angular/cli).
+
+Compilador COBOL (GnuCOBOL / COBOL-IT) opcional si se utiliza el binario procesado preexistente.
+
+### 1. Iniciar el Backend (Spring Boot)
+
+```bash
+cd CoreBankingBatch
+./mvnw spring-boot:run
+```
+
+El servicio quedará escuchando en http://localhost:8080/api/v1/core-banking/maestro-saldos.
+
+
+### 2. Iniciar el Frontend (Angular)
+
+```bash
+cd frontend-dashboard
+npm install
+ng serve -oa
+```
+Navega a http://localhost:4200 para visualizar el Dashboard de Auditoría conectado al backend.
+
 
 ##  Explicación de Parámetros del JCL
 
@@ -175,4 +253,16 @@ DCB (Data Control Block):
 RECFM=FB: Formato de registro fijo bloqueado (Fixed Blocked).
 
 LRECL: Longitud exacta de línea que definiste en la FD del COBOL (40 bytes para el maestro, 80 bytes para el reporte).
+
+
+## 👤 Autor
+Ezequiel Siñeriz - Desarrollador Backend / Full-Stack / COBOL / JCL
+
+
+
+
+
+
+
+
 
