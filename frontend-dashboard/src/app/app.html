@@ -1,0 +1,50 @@
+<div class="dashboard-container">
+      <header class="header">
+        <div class="title-zone">
+          <h1>🏦 Core Banking Audit Dashboard</h1>
+          <p>Trazabilidad End-to-End: Batch COBOL/JCL ➔ Spring Boot API ➔ Angular Signals</p>
+        </div>
+        <button (click)="service.cargarMaestroSaldos()" [disabled]="service.loading()" class="btn-refresh">
+          {{ service.loading() ? 'Leyendo .DAT...' : '🔄 Sincronizar Batch' }}
+        </button>
+      </header>
+
+      @if (service.error()) {
+        <div class="alert-error">
+          ⚠️ {{ service.error() }}
+        </div>
+      }
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>N° Cuenta</th>
+              <th>Titular de la Cuenta</th>
+              <th>Saldo Actual</th>
+              <th>Estado Core</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (cuenta of service.cuentas(); track cuenta.nroCuenta) {
+              <tr>
+                <td class="account-code">{{ cuenta.nroCuenta }}</td>
+                <td class="holder-name">{{ cuenta.titular }}</td>
+                <td class="balance">{{ cuenta.saldo | currency:'USD':'symbol':'1.2-2' }}</td>
+                <td>
+                  <span class="status-badge" [class.active]="cuenta.activa">
+                    {{ cuenta.estado }}
+                  </span>
+                </td>
+              </tr>
+            } @empty {
+              @if (!service.loading()) {
+                <tr>
+                  <td colspan="4" class="empty-msg">No hay datos procesados disponibles.</td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
