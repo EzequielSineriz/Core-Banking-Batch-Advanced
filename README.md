@@ -41,6 +41,15 @@ Reactividad con Signals: Manejo de estado reactivo asincrónico para la carga y 
 
 Standalone Architecture: Componentes desacoplados sin necesidad de NgModules complejos, garantizando modularidad y tiempos de carga reducidos.
 
+## Video explicativo del funcionamiento
+
+https://github.com/user-attachments/assets/2b8dcf4c-605b-49cc-bc68-72882a3676cf
+
+
+
+
+
+
 
 ## 📌 Descripción del Proyecto
 
